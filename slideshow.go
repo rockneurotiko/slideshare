@@ -2,6 +2,7 @@ package slideshare
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -14,6 +15,25 @@ func (s *Service) GetSlideshow(id int, detailed bool) (Slideshow, error) {
 	args["slideshow_id"] = strconv.Itoa(id)
 	args["detailed"] = Btoa(detailed)
 	url := s.generateUrl("get_slideshow", args)
+	resp, err := http.Get(url)
+	if err != nil {
+		return Slideshow{}, err
+	}
+	slideshow := Slideshow{}
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err == nil {
+		xml.Unmarshal([]byte(responseBody), &slideshow)
+	}
+	return slideshow, err
+}
+
+func (s *Service) GetSlideshowUrl(uri string, detailed bool) (Slideshow, error) {
+	args := make(map[string]string)
+	args["slideshow_url"] = uri
+	args["detailed"] = Btoa(detailed)
+	url := s.generateUrl("get_slideshow", args)
+	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return Slideshow{}, err
